@@ -1,68 +1,86 @@
-# NewsWire Backend - Strapi Headless CMS
+# NewsWire Backend - Strapi v5 Headless CMS
 
 ## Project Overview
 
-NewsWire Backend is a headless CMS built with Strapi, designed to manage and serve news articles, categories, and sources. It provides RESTful APIs for a news application with comprehensive data structure, relationships, and queries.
+NewsWire Backend is a headless CMS built with **Strapi v5**, designed to manage and serve news articles, categories, and sources. It provides RESTful APIs for a news application with comprehensive data structure, relationships, and queries. Built with TypeScript for type safety and modern development experience.
 
 ## Tech Stack
 
-- **Framework**: Strapi v4+ (Headless CMS)
-- **Database**: SQLite (default) or PostgreSQL (production)
-- **Language**: JavaScript/TypeScript
+- **Framework**: Strapi v5.36.0 (Headless CMS)
+- **Language**: TypeScript
+- **Database**: SQLite (development) or PostgreSQL (production)
 - **API**: REST API with JSON responses
-- **Documentation**: Auto-generated Strapi API documentation
+- **Build Tool**: TypeScript compiler with auto-compilation on changes
+- **Documentation**: Auto-generated Strapi API documentation at `/documentation`
 
 ## Project Structure
 
 ```
 D:\Projects\Strapi\strapi-news/
-├── config/                          # Strapi configuration files
+├── config/                          # Strapi TypeScript configuration
 │   ├── admin.ts                     # Admin panel settings
 │   ├── api.ts                       # API settings
-│   ├── database.ts                  # Database configuration
+│   ├── database.ts                  # Database configuration (SQLite default)
 │   ├── server.ts                    # Server settings
 │   ├── middlewares.ts               # Middleware configuration
-│   └── plugins.ts                   # Plugin settings
+│   └── plugins.ts                   # Plugin settings (Users & Permissions, etc)
 ├── src/
-│   ├── api/                         # API routes and logic
-│   │   ├── news/                    # News article collection
+│   ├── api/                         # API collections (auto-compiled to dist/)
+│   │   ├── news/                    # News articles collection
 │   │   │   ├── content-types/
 │   │   │   │   └── news/
-│   │   │   │       ├── schema.json  # Article schema definition
-│   │   │   │       └── index.js
-│   │   │   ├── controllers/         # Request handlers
-│   │   │   ├── services/            # Business logic
-│   │   │   └── routes/              # API routes
-│   │   ├── category/                # News categories collection
+│   │   │   │       └── schema.json  # Article schema definition
+│   │   │   ├── controllers/
+│   │   │   │   └── news.ts          # Core API handlers (auto-generated)
+│   │   │   ├── services/
+│   │   │   │   └── news.ts          # Business logic (auto-generated)
+│   │   │   └── routes/
+│   │   │       └── news.ts          # Route definitions (auto-generated)
+│   │   ├── category/                # Categories collection
 │   │   │   ├── content-types/
 │   │   │   │   └── category/
 │   │   │   │       └── schema.json
 │   │   │   ├── controllers/
+│   │   │   │   └── category.ts
 │   │   │   ├── services/
+│   │   │   │   └── category.ts
 │   │   │   └── routes/
-│   │   └── source/                  # News sources collection
+│   │   │       └── category.ts
+│   │   └── source/                  # Sources collection
 │   │       ├── content-types/
 │   │       │   └── source/
 │   │       │       └── schema.json
 │   │       ├── controllers/
+│   │       │   └── source.ts
 │   │       ├── services/
+│   │       │   └── source.ts
 │   │       └── routes/
+│   │           └── source.ts
 │   ├── extensions/                  # Plugin extensions
 │   ├── index.ts                     # Strapi bootstrap
 │   └── admin/                       # Admin panel customization
-├── database/
-│   ├── migrations/                  # Database migrations
-│   └── sqlite.db                    # SQLite database file
+├── dist/                            # Compiled TypeScript output
+│   └── src/                         # Auto-generated on start
+├── .tmp/
+│   └── data.db                      # SQLite database file
 ├── public/
 │   └── uploads/                     # Uploaded files storage
 ├── scripts/
-│   └── import-data.js               # Data import script
+│   ├── import-data.js               # Data import script (30 articles)
+│   └── check-api.js                 # API health check
 ├── types/
-│   └── index.ts                     # TypeScript type definitions
+│   ├── index.ts                     # Custom TypeScript interfaces
+│   └── generated/                   # Auto-generated Strapi types
 ├── src/lib/
-│   └── data-utils.ts                # Data utility functions
+│   └── data-utils.ts                # 40+ data utility functions
+├── .env                             # Environment variables
+├── .env.example                     # Example env file
 ├── package.json
 ├── tsconfig.json
+├── CLAUDE.md                        # Project documentation
+├── DATA_STRUCTURE.md                # Data model reference
+├── INTEGRATION_GUIDE.md             # Frontend integration
+├── TROUBLESHOOTING.md               # Common issues & fixes
 └── README.md
 ```
 
@@ -165,33 +183,45 @@ interface Article {
 ### News Articles
 
 ```
-GET    /api/news                     # Get all articles
-GET    /api/news?filters[category]  # Filter by category
-GET    /api/news/:id                # Get single article
-POST   /api/news                     # Create article (authenticated)
-PUT    /api/news/:id                # Update article (authenticated)
-DELETE /api/news/:id                # Delete article (authenticated)
+GET    /api/news-articles                           # Get all published articles
+GET    /api/news-articles?filters[category][id]=1   # Filter by category ID
+GET    /api/news-articles?populate=*                # Include related data
+GET    /api/news-articles/:id                       # Get single article
+POST   /api/news-articles                           # Create article (requires token)
+PUT    /api/news-articles/:id                       # Update article (requires token)
+DELETE /api/news-articles/:id                       # Delete article (requires token)
 ```
 
 ### Categories
 
 ```
-GET    /api/categories               # Get all categories
-GET    /api/categories/:id          # Get single category
-POST   /api/categories               # Create category (authenticated)
-PUT    /api/categories/:id          # Update category (authenticated)
-DELETE /api/categories/:id          # Delete category (authenticated)
+GET    /api/categories                    # Get all published categories
+GET    /api/categories/:id               # Get single category
+POST   /api/categories                    # Create (requires token)
+PUT    /api/categories/:id               # Update (requires token)
+DELETE /api/categories/:id               # Delete (requires token)
 ```
 
 ### Sources
 
 ```
-GET    /api/sources                  # Get all sources
-GET    /api/sources/:id             # Get single source
-POST   /api/sources                  # Create source (authenticated)
-PUT    /api/sources/:id             # Update source (authenticated)
-DELETE /api/sources/:id             # Delete source (authenticated)
+GET    /api/sources                       # Get all published sources
+GET    /api/sources/:id                  # Get single source
+POST   /api/sources                       # Create (requires token)
+PUT    /api/sources/:id                  # Update (requires token)
+DELETE /api/sources/:id                  # Delete (requires token)
 ```
+
+### Permissions (v5)
+
+Strapi v5 has **draft & publish enabled by default** and requires explicit public permissions.
+
+**To enable public API access:**
+1. Admin panel: **Settings → Users & Permissions → Roles → Public**
+2. Check `find` and `findOne` for News, Category, Source
+3. Save
+
+After enabling, all GET endpoints return `{"data": []}` when empty (instead of 404).
 
 ## Helper Functions (src/lib/data-utils.ts)
 
@@ -290,54 +320,112 @@ This script creates:
 ### Commands
 
 ```bash
-npm run develop          # Start development server with watch mode
-npm run build            # Build admin panel and optimize
-npm run start            # Start production server
-npm run strapi deploy    # Deploy to hosting service
-npm run import-data      # Import mock data
+npm run develop          # Start dev server with TypeScript hot reload (localhost:1337)
+npm run build            # Compile TypeScript to dist/ folder
+npm run start            # Start production server (requires build first)
+npm run import-data      # Import 30 mock articles across 6 categories
+npm run check-api        # Health check for all API endpoints
+npm run console          # Interactive Strapi console
+npm run strapi upgrade   # Upgrade Strapi to latest version
 ```
+
+### Key Development Features
+
+- **Hot Reload**: TypeScript files automatically recompile on change
+- **Auto-migration**: Database schema updates automatically
+- **Admin Panel**: http://localhost:1337/admin (create admin user on first run)
+- **API Documentation**: http://localhost:1337/documentation (Swagger/OpenAPI)
+- **Type Safety**: Full TypeScript support with auto-generated types
 
 ### Environment Variables
 
-Create `.env.local` file:
+The `.env` file is automatically generated with secure defaults:
 
 ```env
-HOST=localhost
+HOST=0.0.0.0
 PORT=1337
-ADMIN_JWT_SECRET=your_secret_here
-JWT_SECRET=your_secret_here
-API_TOKEN_SALT=your_salt_here
+
+# Database (SQLite by default, configured in config/database.ts)
+DATABASE_CLIENT=sqlite
+DATABASE_FILENAME=.tmp/data.db
+
+# Secrets (auto-generated on first run)
+APP_KEYS=...
+ADMIN_JWT_SECRET=...
+JWT_SECRET=...
+API_TOKEN_SALT=...
+ENCRYPTION_KEY=...
+TRANSFER_TOKEN_SALT=...
+```
+
+To change database to PostgreSQL, update `config/database.ts` and set env vars:
+```env
+DATABASE_CLIENT=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=strapi
+DATABASE_USERNAME=user
+DATABASE_PASSWORD=password
 ```
 
 ### Adding New Content Types
 
-1. Use Strapi admin panel (http://localhost:1337/admin)
-2. Create content type with required fields
-3. Schema automatically stored in `src/api/[name]/content-types/[name]/schema.json`
-4. API routes generated automatically
+1. Use Strapi admin panel (http://localhost:1337/admin) → Content-type builder
+2. Create new collection type with required fields
+3. Schema stored in `src/api/[name]/content-types/[name]/schema.json`
+4. Strapi auto-generates controllers, services, and routes
+5. TypeScript files in `src/api/[name]/` are compiled to `dist/` on save
+6. API endpoint becomes: `/api/[pluralName]`
 
 ### Extending with Custom Logic
 
-1. Create service in `src/api/[name]/services/`
-2. Add business logic for data processing
-3. Use in controllers to handle requests
-4. Example: custom filtering, calculations, validations
+1. Edit files in `src/api/[name]/`
+   - **services/**: Business logic and data transformations
+   - **controllers/**: Request handlers (HTTP layer)
+   - **routes/**: Custom route definitions
+2. Use Strapi factories:
+   ```typescript
+   import { factories } from '@strapi/strapi';
+
+   export default factories.createCoreService('api::my-type.my-type');
+   ```
+3. Files auto-compile on save
+
+### Public API Access (Strapi v5)
+
+By default, content requires authentication. To allow public access:
+
+1. Admin panel → **Settings → Users & Permissions plugin → Roles → Public**
+2. Expand each content type (News, Category, Source)
+3. Check: `find` (list) and `findOne` (single item)
+4. Click **Save**
+
+After enabling, GET endpoints return `{"data": []}` when empty instead of 404.
 
 ## Admin Panel
 
-Access at: `http://localhost:1337/admin`
+Access at: **http://localhost:1337/admin**
 
-Default login:
-- Email: Check console output after first run
-- Password: Set during initial setup
+### First Time Setup
+1. Start server: `npm run develop`
+2. Open http://localhost:1337/admin
+3. Create admin account (email + password)
+4. Login to dashboard
 
-### Features
-- Visual content management
-- Relationship management
-- Media library
-- Draft/Publish workflows
-- User management
-- Role-based access control
+### Admin Features
+- **Content Manager**: Visual CRUD for all content types
+- **Content-type Builder**: Create/modify content types
+- **Users & Permissions**: Manage roles and API access
+- **Media Library**: Upload and manage images/files
+- **Draft/Publish**: Save as draft before publishing
+- **Settings**: Configure plugins, database, security
+- **API Tokens**: Generate tokens for programmatic access
+
+### Important v5 Notes
+- All content types have draft/publish enabled by default
+- Public role is auto-created but with no permissions
+- Enable public permissions for API access (see "Public API Access" section)
+- Admin users have full access automatically
 
 ## API Documentation
 
@@ -404,20 +492,47 @@ API_TOKEN_SALT=salt
 
 ## Troubleshooting
 
-### Database Issues
-- Check `database/sqlite.db` permissions
-- Verify database connection string
-- Run migrations if needed
+### Common Issues
 
-### API Not Responding
-- Verify server is running on port 1337
-- Check firewall settings
-- Review error logs in console
+**API returns 404 for all endpoints**
+- Ensure TypeScript files (`.ts`) exist in `src/api/[name]/controllers|services|routes/`
+- Restart server: `npm run develop`
+- Check `dist/` folder was generated with compiled files
+- See `TROUBLESHOOTING.md` for detailed fixes
 
-### Import Script Fails
-- Ensure server is running
-- Check API_TOKEN configuration
-- Verify network connectivity
+**Endpoints return 404 when empty (no published content)**
+- This is Strapi v5 default behavior
+- Enable public permissions: Settings → Users & Permissions → Roles → Public
+- Check `find` and `findOne` for News, Category, Source
+- See "Public API Access" section above
+
+**Import script fails**
+- Ensure server is running: `npm run develop`
+- Check if `.tmp/data.db` exists and is writable
+- Run health check: `node scripts/check-api.js`
+- Verify `/api/news-articles`, `/api/categories`, `/api/sources` are accessible
+
+**TypeScript compilation errors**
+- Clear dist: `rm -rf dist .cache`
+- Reinstall: `npm install`
+- Restart: `npm run develop`
+
+See `TROUBLESHOOTING.md` for more solutions.
+
+## File Format & TypeScript Note
+
+**Important:** All API files (controllers, services, routes) must be TypeScript (`.ts`), not JavaScript (`.js`).
+
+```typescript
+// ✅ Correct (src/api/news/controllers/news.ts)
+import { factories } from '@strapi/strapi';
+export default factories.createCoreController('api::news.news');
+
+// ❌ Wrong (would not be compiled)
+module.exports = require('@strapi/strapi').factories.createCoreController('api::news.news');
+```
+
+TypeScript files in `src/` auto-compile to `dist/` on save. JavaScript files are ignored by the compiler.
 
 ## Future Enhancements
 
@@ -428,11 +543,12 @@ Consider adding:
 - GraphQL API alongside REST
 - Real-time updates with WebSockets
 - Analytics integration
-- Comment system
-- User authentication for frontend
-- Multiple language support (i18n)
+- User comments system
+- End-user authentication
+- Multi-language support (i18n)
 - Article recommendations engine
 - Social media integration
+- Email notifications
 
 ## Resources
 

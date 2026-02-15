@@ -1,37 +1,37 @@
 {
-  "kind": "collectionType",
-  "collectionName": "sources",
-  "info": {
-    "singularName": "source",
-    "pluralName": "sources",
-    "displayName": "Source",
-    "description": "News sources"
-  },
-  "options": {
-    "draftAndPublish": true
-  },
-  "attributes": {
-    "name": {
-      "type": "string",
-      "required": true,
-      "unique": true,
-      "minLength": 2,
-      "maxLength": 100
+    "kind": "collectionType",
+    "collectionName": "sources",
+    "info": {
+        "singularName": "source",
+        "pluralName": "sources",
+        "displayName": "Source",
+        "description": "News sources"
     },
-    "url": {
-      "type": "string",
-      "required": true,
-      "unique": true,
-      "regex": "^(http|https)://[^\\\\s$.?#].[^\\\\s]*$"
+    "options": {
+        "draftAndPublish": true
     },
-    "description": {
-      "type": "text"
-    },
-    "news_articles": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "api::news.news",
-      "mappedBy": "source"
+    "attributes": {
+        "name": {
+            "type": "string",
+            "required": true,
+            "unique": true,
+            "minLength": 2,
+            "maxLength": 100
+        },
+        "url": {
+            "type": "string",
+            "required": true,
+            "unique": true,
+            "regex": "^(http|https):\\/\\/[a-zA-Z0-9-.]+\\.[a-zA-Z]{2,}(?:\\/[^\\s]*)?$"
+        },
+        "description": {
+            "type": "text"
+        },
+        "news_articles": {
+            "type": "relation",
+            "relation": "oneToMany",
+            "target": "api::news.news",
+            "mappedBy": "source"
+        }
     }
-  }
 }

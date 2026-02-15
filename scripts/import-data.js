@@ -5,7 +5,7 @@
  * Based on CLAUDE.md specification with 25+ articles across 6 categories
  */
 
-const API_TOKEN = ""; // TODO: Replace with your actual API token if authentication is enabled
+const API_TOKEN = "e4a8154a3dc2929a55cd9f2ee5067fb2a569f968363dda7ca30c4ff40575b045fb20cf0e516c374a41ad92b2541aa12c781bd8cbbd0137fc523411890b9f07c98cc6eb20509380159f798a18de9b8174abbb80e0f4edac1b1cbcf191e61ef2404dd5fda9b7c40612f9e249af4b5ee343d9250bf80eee6247e795e6c1e0d785b9"; // TODO: Replace with your actual API token if authentication is enabled
 const STRAPI_URL = "http://localhost:1337/api";
 
 async function createEntry(endpoint, data) {
@@ -14,7 +14,7 @@ async function createEntry(endpoint, data) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                // 'Authorization': `Bearer ${API_TOKEN}`, // Uncomment and set token if needed
+                'Authorization': `Bearer ${API_TOKEN}`, // Uncomment and set token if needed
             },
             body: JSON.stringify({ data }),
         });
@@ -389,7 +389,7 @@ async function runImport() {
         ];
 
         for (const newsItem of newsData) {
-            await createEntry("news", newsItem);
+            await createEntry("news-articles", newsItem);
         }
 
         console.log("\n✅ Data import completed successfully!");
