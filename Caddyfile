@@ -1,0 +1,3 @@
+{$DOMAIN:api.example.com} {
+	reverse_proxy strapi:1337
+}

@@ -274,7 +274,7 @@
 
 ---
 
-### 3.17 PostgreSQL Migration Guide `[TODO]`
+### 3.17 PostgreSQL Migration Guide `[DONE]`
 
 **Priority**: Low (before deployment)
 **Why**: SQLite is fine for development but PostgreSQL is needed for production. A clear migration guide prevents issues.
