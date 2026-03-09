@@ -3,6 +3,12 @@ RUN apt-get update && apt-get install -y build-essential libvips-dev python3 && 
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
+# Ensure correct SWC bindings are installed for this platform
+RUN node -e "try{require('@swc/core')}catch(e){console.log('SWC missing, installing...');}" && \
+    npm ls @swc/core 2>&1 | head -5 && \
+    node -e "console.log(process.platform, process.arch)"
+RUN npm install --no-save @swc/core-linux-x64-gnu 2>/dev/null || true
+RUN npm install --no-save @swc/core-linux-arm64-gnu 2>/dev/null || true
 COPY . .
 ENV NODE_ENV=production
 RUN npm run build
@@ -12,6 +18,8 @@ RUN apt-get update && apt-get install -y libvips42 && rm -rf /var/lib/apt/lists/
 WORKDIR /app
 COPY --from=build /app/package.json /app/package-lock.json ./
 RUN npm ci --omit=dev
+RUN npm install --no-save @swc/core-linux-x64-gnu 2>/dev/null || true
+RUN npm install --no-save @swc/core-linux-arm64-gnu 2>/dev/null || true
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 COPY --from=build /app/config ./config
