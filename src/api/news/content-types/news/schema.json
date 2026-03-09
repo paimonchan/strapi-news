@@ -21,11 +21,21 @@
       "type": "text",
       "required": true
     },
+    "content": {
+      "type": "richtext"
+    },
     "url": {
       "type": "string",
       "required": true,
       "unique": true,
       "regex": "^(http|https):\\/\\/[a-zA-Z0-9-.]+\\.[a-zA-Z]{2,}(?:\\/[^\\s]*)?$"
+    },
+    "image": {
+      "type": "string"
+    },
+    "author": {
+      "type": "string",
+      "maxLength": 100
     },
     "publishedAt": {
       "type": "datetime",

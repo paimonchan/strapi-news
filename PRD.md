@@ -19,6 +19,11 @@
 
 **Frontend**: `D:\Projects\Nextjs\lazy-nextjs-news` (Next.js 16 + React 19 + Tailwind v4 + shadcn/ui)
 
+**Frontend Architecture**: Clean architecture with layers:
+- `src/domain/` — `Article` and `Category` interfaces
+- `src/infrastructure/strapi/` — API client, types (`StrapiArticle`, `StrapiCategory`, `StrapiSource`), transformers (`convertStrapiToArticle`)
+- `src/application/` — Use cases (`get-home-articles`, `get-category-articles`, `get-article-detail`, `get-nav-categories`)
+
 ---
 
 ## 2. Current State (What's Already Built)
@@ -67,7 +72,7 @@
 
 ## 3. Features To Build
 
-### 3.1 Add `content` Field to News Schema `[TODO]`
+### 3.1 Add `content` Field to News Schema `[DONE]`
 
 **Priority**: High
 **Why**: The frontend expects a `content` field for full article body text. Currently the schema only has `title`, `summary`, and `url`. The frontend falls back to `summary` when `content` is missing, so article detail pages show just the summary.
@@ -79,11 +84,13 @@
 - Update import script to populate `content` with realistic article body text (2-4 paragraphs)
 - Verify the field appears in API responses at `/api/news-articles?populate=*`
 
-**Frontend impact**: `src/lib/api.ts` already reads `content` from Strapi response. No frontend changes needed.
+**Frontend impact**: `StrapiArticle` type in `src/infrastructure/strapi/types.ts` already declares `content?: string`. The `convertStrapiToArticle()` transformer in `src/infrastructure/strapi/transformers.ts` falls back to `summary` when `content` is missing (`content: strapiArticle.content || strapiArticle.summary`). No frontend changes needed once this field is added.
+
+**Also unblocks**: Frontend PRD 3.1 (Typography Plugin) — article body will have real content to style with `prose` classes.
 
 ---
 
-### 3.2 Add `image` Field to News Schema `[TODO]`
+### 3.2 Add `image` Field to News Schema `[DONE]`
 
 **Priority**: High
 **Why**: Frontend shows grey placeholder boxes for every article. Strapi should serve image URLs so the frontend can display real images.
@@ -95,11 +102,13 @@
 - Update import script to include image URLs for each article (use placeholder image services like `picsum.photos` or category-appropriate stock URLs)
 - Ensure `populate=*` includes the image in API response
 
-**Frontend impact**: Frontend PRD feature 3.6 (Real Images) depends on this. Frontend `convertStrapiToArticle()` currently hardcodes `image: "/placeholder.jpg"` — will need to read from Strapi field.
+**Frontend impact**: Frontend `convertStrapiToArticle()` in `src/infrastructure/strapi/transformers.ts` currently hardcodes `image: "/placeholder.jpg"`. Once this field exists, the frontend transformer needs updating to read from `strapiArticle.image`. The `StrapiArticle` type in `src/infrastructure/strapi/types.ts` also needs an `image` field added.
+
+**Also unblocks**: Frontend PRD 3.6 (Real Images) — `NewsCard` and featured article can show actual images via Next.js `<Image>`.
 
 ---
 
-### 3.3 Add `author` Field to News Schema `[TODO]`
+### 3.3 Add `author` Field to News Schema `[DONE]`
 
 **Priority**: Medium
 **Why**: Frontend displays `source.name` as the author. A dedicated `author` field allows showing the actual journalist/writer name separately from the publication source.
@@ -109,11 +118,13 @@
 - Update import script to include realistic author names
 - Keep existing `source` relation for the publication
 
-**Frontend impact**: Frontend currently maps `source.name` → `author`. After this, frontend can show both author name and source name separately.
+**Frontend impact**: Frontend `convertStrapiToArticle()` in `src/infrastructure/strapi/transformers.ts` currently maps `source.name` → `author` as fallback (`author: strapiArticle.source?.name || "Unknown"`). After this field is added, the transformer should prefer `strapiArticle.author` over `source.name`. The `StrapiArticle` type also needs an `author?: string` field.
+
+**Also unblocks**: Frontend PRD 3.8 (Source Link) — frontend can show author name and source name as separate elements, with source name as a clickable link to the source URL.
 
 ---
 
-### 3.4 Seed Data: More Realistic Articles `[TODO]`
+### 3.4 Seed Data: More Realistic Articles `[DONE]`
 
 **Priority**: Medium
 **Why**: Current import script creates articles with minimal content. Better seed data makes development and demos more convincing.
@@ -142,7 +153,7 @@
 
 ---
 
-### 3.6 Search Improvements `[TODO]`
+### 3.6 Search Improvements `[DONE]`
 
 **Priority**: Medium
 **Why**: Current search only works on `title` and `summary` via Strapi's `$containsi` filter. Adding `content` search and better relevance would improve the frontend search feature.
@@ -152,7 +163,9 @@
 - Frontend already sends `$or` filters for title and summary — just needs content added to the filter set
 - Consider adding a custom search endpoint if more advanced search is needed later
 
-**Frontend impact**: Frontend `searchArticles()` in `api.ts` sends `$or` filters. After adding content field, update the frontend function to also search content.
+**Frontend impact**: Frontend `searchArticles()` in `src/infrastructure/strapi/article-repository.ts` sends `$or` filters on `title` and `summary`. After adding content field, the frontend function needs a third filter: `"filters[$or][2][content][$containsi]": query`.
+
+**Also unblocks**: Frontend PRD 3.4 (Search Feature) — search page UI already planned, better search results make it more useful.
 
 ---
 
@@ -223,7 +236,22 @@
 
 ---
 
-### 3.14 Fix Documentation: v4 vs v5 Response Format `[TODO]`
+### 3.14 Add `slug` Field to Category Schema `[TODO]`
+
+**Priority**: Medium
+**Why**: Frontend routes use `/category/[slug]` and currently derives slug from `category.name.toLowerCase()`. A proper `slug` field is more robust (handles multi-word categories, special characters, etc.) and allows the frontend to fetch categories dynamically from Strapi instead of hardcoding them.
+
+**Requirements**:
+- Add `slug` field to `src/api/category/content-types/category/schema.json` (type: `string`, required, unique)
+- Auto-generate slug from `name` on create (e.g., "Technology" → "technology", "Breaking News" → "breaking-news")
+- Update import script to set slug for each category
+- Ensure slug is returned in `/api/categories` responses
+
+**Frontend impact**: The `StrapiCategory` type in `src/infrastructure/strapi/types.ts` needs a `slug` field. The `get-nav-categories` use case can then build navigation from Strapi data instead of the hardcoded `categories` array in `src/domain/category.ts`. Also unblocks frontend PRD 3.3 (Dynamic Navigation from Strapi).
+
+---
+
+### 3.15 Fix Documentation: v4 vs v5 Response Format `[TODO]`
 
 **Priority**: Low
 **Why**: `INTEGRATION_GUIDE.md` still shows Strapi v4 nested `attributes` response format in some examples, but the actual API returns Strapi v5 flat format. The `types/index.ts` `StrapiArticle` type is correct (v5 flat), but the guide is misleading.
@@ -235,7 +263,7 @@
 
 ---
 
-### 3.15 Add `check-api` Script to package.json `[TODO]`
+### 3.16 Add `check-api` Script to package.json `[TODO]`
 
 **Priority**: Low
 **Why**: `scripts/check-api.js` exists but has no npm script entry. Only `import-data` is registered in `package.json`.
@@ -246,7 +274,7 @@
 
 ---
 
-### 3.16 PostgreSQL Migration Guide `[TODO]`
+### 3.17 PostgreSQL Migration Guide `[TODO]`
 
 **Priority**: Low (before deployment)
 **Why**: SQLite is fine for development but PostgreSQL is needed for production. A clear migration guide prevents issues.
@@ -260,7 +288,7 @@
 
 ---
 
-### 3.17 API Token Authentication Setup `[TODO]`
+### 3.18 API Token Authentication Setup `[TODO]`
 
 **Priority**: Medium
 **Why**: Frontend uses `STRAPI_API_TOKEN` env var for authenticated requests. This should be documented and easy to set up.
@@ -310,10 +338,11 @@ These backend features are **blocking** frontend PRD features:
 |----------------|------------------------------|
 | 3.1 Add `content` field | Frontend 3.1 Typography (article body has content to style) |
 | 3.2 Add `image` field | Frontend 3.6 Real Images |
-| 3.3 Add `author` field | Frontend article page author display |
+| 3.3 Add `author` field | Frontend 3.8 Source Link (separate author from source) |
 | 3.4 Better seed data | All frontend features (better demo data) |
 | 3.6 Search on content | Frontend 3.4 Search Feature |
 | 3.8 CORS for production | Frontend deployment |
+| 3.14 Add `slug` to categories | Frontend 3.3 Dynamic Navigation from Strapi |
 
 ---
 
@@ -324,17 +353,18 @@ These backend features are **blocking** frontend PRD features:
 | 1 | 3.1 Add `content` field | High | Yes — article body |
 | 2 | 3.2 Add `image` field | High | Yes — real images |
 | 3 | 3.4 Better seed data | Medium | Yes — all features |
-| 4 | 3.3 Add `author` field | Medium | Yes — author display |
-| 5 | 3.8 CORS for production | Medium | Yes — deployment |
-| 6 | 3.6 Search improvements | Medium | Yes — search |
-| 7 | 3.17 API token setup | Medium | No |
-| 8 | 3.5 Category counts | Low | No |
-| 9 | 3.7 Rate limiting | Low | No |
-| 10 | 3.9 Response caching | Low | No |
-| 11 | 3.14 Fix v4/v5 docs | Low | No |
-| 12 | 3.15 Add check-api script | Low | No |
-| 13 | 3.16 PostgreSQL guide | Low | No |
-| 14 | 4.3 Security hardening | Ongoing | No |
+| 4 | 3.3 Add `author` field | Medium | Yes — author/source separation |
+| 5 | 3.14 Add `slug` to categories | Medium | Yes — dynamic navigation |
+| 6 | 3.8 CORS for production | Medium | Yes — deployment |
+| 7 | 3.6 Search improvements | Medium | Yes — search on content |
+| 8 | 3.18 API token setup | Medium | No |
+| 9 | 3.5 Category counts | Low | No |
+| 10 | 3.7 Rate limiting | Low | No |
+| 11 | 3.9 Response caching | Low | No |
+| 12 | 3.15 Fix v4/v5 docs | Low | No |
+| 13 | 3.16 Add check-api script | Low | No |
+| 14 | 3.17 PostgreSQL guide | Low | No |
+| 15 | 4.3 Security hardening | Ongoing | No |
 
 ---
 
@@ -364,6 +394,17 @@ npm run build         # Compile TypeScript
 npm run import-data   # Import seed data
 npm run check-api     # Health check endpoints
 ```
+
+### Frontend Key Files (for reference)
+| What | File |
+|------|------|
+| Strapi types | `src/infrastructure/strapi/types.ts` |
+| Strapi→Article transformer | `src/infrastructure/strapi/transformers.ts` |
+| Article API calls | `src/infrastructure/strapi/article-repository.ts` |
+| Category API calls | `src/infrastructure/strapi/category-repository.ts` |
+| Domain Article interface | `src/domain/article.ts` |
+| Domain Category (hardcoded) | `src/domain/category.ts` |
+| Frontend PRD | `PRD.md` |
 
 ### How to Ask Claude to Build
 ```
