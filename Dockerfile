@@ -15,6 +15,7 @@ COPY --from=build /app/package.json ./
 RUN npm install --package-lock-only && npm ci --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
+RUN touch /app/favicon.png
 COPY --from=build /app/config ./config
 COPY --from=build /app/src ./src
 COPY --from=build /app/tsconfig.json ./

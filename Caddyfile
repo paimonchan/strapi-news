@@ -1,3 +1,9 @@
+{
+	servers {
+		protocols h1 h2
+	}
+}
+
 {$DOMAIN:api.example.com} {
 	reverse_proxy strapi:1337
 }
