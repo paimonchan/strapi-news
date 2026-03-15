@@ -2,11 +2,11 @@ FROM node:20-bookworm-slim AS build
 RUN apt-get update && apt-get install -y build-essential libvips-dev python3 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package.json ./
-RUN npm install --include=optional && npm install sharp
+RUN npm install --include=optional
 COPY . .
 ENV NODE_ENV=production
 RUN npm run build
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev && npm install --os=linux --cpu=x64 sharp
 
 FROM node:20-bookworm-slim
 RUN apt-get update && apt-get install -y libvips42 && rm -rf /var/lib/apt/lists/*
