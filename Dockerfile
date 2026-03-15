@@ -13,7 +13,6 @@ WORKDIR /app
 COPY --from=build /app/package.json /app/package-lock.json* ./
 RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/.cache ./.cache
 COPY --from=build /app/public ./public
 RUN touch /app/favicon.png
 COPY --from=build /app/config ./config
