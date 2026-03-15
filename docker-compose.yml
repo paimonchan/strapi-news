@@ -50,12 +50,13 @@ services:
     build:
       context: ${NEXTJS_PATH:-../../Nextjs/lazy-nextjs-news}
       args:
-        NEXT_PUBLIC_STRAPI_URL: http://strapi:1337
+        NEXT_PUBLIC_STRAPI_URL: https://${STRAPI_DOMAIN}
     restart: unless-stopped
     expose:
       - "3000"
     environment:
-      NEXT_PUBLIC_STRAPI_URL: http://strapi:1337
+      NEXT_PUBLIC_STRAPI_URL: https://${STRAPI_DOMAIN}
+      STRAPI_API_TOKEN: ${STRAPI_API_TOKEN:?Set STRAPI_API_TOKEN in .env}
     networks:
       - web
 
