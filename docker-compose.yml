@@ -6,13 +6,17 @@ services:
       - "80:80"
       - "443:443"
     environment:
-      DOMAIN: ${DOMAIN:?Set DOMAIN in .env}
+      STRAPI_DOMAIN: ${STRAPI_DOMAIN:?Set STRAPI_DOMAIN in .env}
+      NEXTJS_DOMAIN: ${NEXTJS_DOMAIN:?Set NEXTJS_DOMAIN in .env}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
       - strapi
+      - nextjs
+    networks:
+      - web
 
   strapi:
     build: .
@@ -39,6 +43,21 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - web
+
+  nextjs:
+    build:
+      context: ../../Nextjs/lazy-nextjs-news
+      args:
+        NEXT_PUBLIC_STRAPI_URL: http://strapi:1337
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      NEXT_PUBLIC_STRAPI_URL: http://strapi:1337
+    networks:
+      - web
 
   postgres:
     image: postgres:16-alpine
@@ -54,6 +73,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - web
+
+networks:
+  web:
 
 volumes:
   postgres-data:

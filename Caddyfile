@@ -4,6 +4,10 @@
 	}
 }
 
-{$DOMAIN:api.example.com} {
+{$STRAPI_DOMAIN} {
 	reverse_proxy strapi:1337
+}
+
+{$NEXTJS_DOMAIN} {
+	reverse_proxy nextjs:3000
 }
