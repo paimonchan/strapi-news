@@ -6,12 +6,13 @@ RUN npm install
 COPY . .
 ENV NODE_ENV=production
 RUN npm run build
+RUN npm prune --omit=dev
 
 FROM node:20-bookworm-slim
 RUN apt-get update && apt-get install -y libvips42 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build /app/package.json /app/package-lock.json* ./
-RUN npm install --omit=dev
+COPY --from=build /app/package.json ./
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 RUN touch /app/favicon.png
