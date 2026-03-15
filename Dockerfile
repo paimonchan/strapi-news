@@ -1,7 +1,7 @@
 FROM node:20-bookworm-slim AS build
 RUN apt-get update && apt-get install -y build-essential libvips-dev python3 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY package.json ./
 RUN npm install
 COPY . .
 ENV NODE_ENV=production
@@ -10,7 +10,7 @@ RUN npm run build
 FROM node:20-bookworm-slim
 RUN apt-get update && apt-get install -y libvips42 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/package.json /app/package-lock.json* ./
 RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/.cache ./.cache
