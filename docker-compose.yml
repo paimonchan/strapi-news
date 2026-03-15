@@ -48,7 +48,7 @@ services:
 
   nextjs:
     build:
-      context: ../../Nextjs/lazy-nextjs-news
+      context: ${NEXTJS_PATH:-../../Nextjs/lazy-nextjs-news}
       args:
         NEXT_PUBLIC_STRAPI_URL: http://strapi:1337
     restart: unless-stopped
