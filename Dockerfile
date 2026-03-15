@@ -19,6 +19,7 @@ RUN touch /app/favicon.png
 COPY --from=build /app/config ./config
 COPY --from=build /app/src ./src
 COPY --from=build /app/tsconfig.json ./
+COPY --from=build /app/types ./types
 COPY --from=build /app/scripts ./scripts
 
 ENV NODE_ENV=production

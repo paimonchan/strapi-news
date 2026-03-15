@@ -4,7 +4,16 @@
  * Provides helpers for filtering, sorting, and retrieving articles
  */
 
-import type { Article, ArticleWithRelations, Category } from "../../types/index";
+interface Article {
+    id: string;
+    title: string;
+    description: string;
+    content: string;
+    category: string;
+    image: string;
+    author: string;
+    publishedAt: string;
+}
 
 // ============================================================================
 // Article Retrieval Functions
