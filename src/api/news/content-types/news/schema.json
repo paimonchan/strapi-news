@@ -24,6 +24,9 @@
     "content": {
       "type": "richtext"
     },
+    "raw_content": {
+      "type": "richtext"
+    },
     "url": {
       "type": "string",
       "required": true,

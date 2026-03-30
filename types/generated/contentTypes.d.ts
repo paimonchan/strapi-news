@@ -492,6 +492,7 @@ export interface ApiNewsNews extends Struct.CollectionTypeSchema {
     localizations: Schema.Attribute.Relation<'oneToMany', 'api::news.news'> &
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
+    raw_content: Schema.Attribute.RichText;
     source: Schema.Attribute.Relation<'manyToOne', 'api::source.source'>;
     summary: Schema.Attribute.Text & Schema.Attribute.Required;
     title: Schema.Attribute.String &

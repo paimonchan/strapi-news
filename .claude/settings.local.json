@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(curl:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npm run:*)",
+      "Bash(taskkill:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)",
+      "Bash(npm install:*)",
+      "Bash(cd:*)"
     ]
   }
 }

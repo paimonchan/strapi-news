@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash *)",
+      "Bash(node *)",
+      "Bash(dir *)",
+      "Bash(del *)",
+      "Bash(mkdir *)",
+      "Bash(move *)",
+      "Bash(npm install *)",
+      "Bash(curl *)",
+      "Bash(jq *)",
+      "Bash(powershell *)",
+      "Bash(ren *)",
+      "Bash(findstr *)",
+      "Bash(npm run *)",
+      "Bash(rmdir *)",
+      "Bash(git add *)"
+    ]
+  },
+  "$version": 3
+}
