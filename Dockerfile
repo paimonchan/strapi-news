@@ -1,26 +1,29 @@
-FROM node:20-bookworm-slim AS build
+FROM node:20-bookworm AS build
 
 # Install build dependencies
-# We need build-essential, python3, and libvips-dev for sharp and native modules
 RUN apt-get update && apt-get install -y \
     build-essential \
     libvips-dev \
     python3 \
     ca-certificates \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Set production environment early for build optimization
+# Set production environment early
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /app
 
-# Copy manifests first for better caching
+# Copy manifests
 COPY package.json package-lock.json ./
 
-# Install dependencies cleanly
-# --include=optional is critical for @swc/core and sharp binary selection
-RUN npm install --include=optional
+# Aggressive NPM configuration to prevent timeout and force correct binaries
+RUN npm config set fetch-retry-maxtimeout 600000 -g && \
+    npm install --include=optional --platform=linux --arch=x64
+
+# Force install the specific SWC Linux x64 binary to bypass auto-detection issues
+RUN npm install @swc/core-linux-x64-gnu
 
 # Copy source files
 COPY . .
