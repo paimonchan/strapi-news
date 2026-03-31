@@ -18,7 +18,7 @@ WORKDIR /app
 # Copy manifest
 COPY package.json ./
 
-# Paksa instalasi binary rollup dan swc untuk linux x64 (fix error sebelumnya)
+# Fix Rollup/SWC Linux binaries
 RUN npm config set fetch-retry-maxtimeout 600000 -g && \
     npm install --platform=linux --arch=x64 && \
     npm install @swc/core-linux-x64-gnu @rollup/rollup-linux-x64-gnu
@@ -26,17 +26,12 @@ RUN npm config set fetch-retry-maxtimeout 600000 -g && \
 # Copy source files
 COPY . .
 
-# Build the Strapi application
-# Langkah ini krusial untuk menghasilkan folder /app/dist yang berisi .js
+# Build the Strapi application (Menghasilkan folder /app/dist)
 RUN npm run build
 
-# Remove development dependencies after build
-RUN npm prune --omit=dev
-
-# Stage 2: Runtime
+# Stage 2: Runtime (Image akhir yang kecil dan bersih)
 FROM node:20-bookworm-slim
 
-# Install runtime dependencies ONLY
 RUN apt-get update && apt-get install -y \
     libvips42 \
     ca-certificates \
@@ -44,19 +39,19 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy ONLY production artifacts
+# Salin HANYA yang dibutuhkan untuk jalan
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
-COPY --from=build /app/config ./config
 COPY --from=build /app/favicon.png ./favicon.png
 
-# Ensure necessary directories exist for media uploads
+# PENTING: Jangan salin folder /app/config karena berisi .ts
+# Strapi v5 otomatis akan membaca konfigurasi dari /app/dist/config
+
 RUN mkdir -p /app/public/uploads
 
 ENV NODE_ENV=production
 EXPOSE 1337
 
-# Menggunakan 'start' yang akan menjalankan Strapi dari folder 'dist'
 CMD ["npm", "run", "start"]
