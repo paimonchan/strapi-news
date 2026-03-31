@@ -27,6 +27,7 @@ RUN npm config set fetch-retry-maxtimeout 600000 -g && \
 COPY . .
 
 # Build the Strapi application
+# Ini akan menghasilkan folder /app/dist DAN /app/build
 RUN npm run build
 
 # Stage 2: Runtime
@@ -39,21 +40,24 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copy node_modules and package.json
+# Salin package.json dan node_modules
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 
-# PENTING: Salin ISI folder dist ke root agar .js berada di config/ dan src/
-COPY --from=build /app/dist/ ./
-
-# Salin public dan favicon
+# SALIN SELURUH FOLDER dist DAN build (Tanpa di-flatten)
+# Strapi v5 butuh folder 'dist' untuk server dan 'build' untuk admin
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/build ./build
 COPY --from=build /app/public ./public
 COPY --from=build /app/favicon.png ./favicon.png
+
+# Salin folder config asli hanya sebagai referensi jika dibutuhkan (biasanya tidak)
+COPY --from=build /app/config ./config
 
 RUN mkdir -p /app/public/uploads
 
 ENV NODE_ENV=production
 EXPOSE 1337
 
-# Jalankan strapi start (sekarang ia akan menemukan file .js di folder config/)
+# Jalankan 'strapi start' yang akan mencari folder 'dist' secara otomatis
 CMD ["npm", "run", "start"]
