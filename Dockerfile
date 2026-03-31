@@ -26,10 +26,10 @@ RUN npm config set fetch-retry-maxtimeout 600000 -g && \
 # Copy source files
 COPY . .
 
-# Build the Strapi application (Menghasilkan folder /app/dist)
+# Build the Strapi application
 RUN npm run build
 
-# Stage 2: Runtime (Image akhir yang kecil dan bersih)
+# Stage 2: Runtime
 FROM node:20-bookworm-slim
 
 RUN apt-get update && apt-get install -y \
@@ -39,19 +39,21 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Salin HANYA yang dibutuhkan untuk jalan
+# Copy node_modules and package.json
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/dist ./dist
+
+# PENTING: Salin ISI folder dist ke root agar .js berada di config/ dan src/
+COPY --from=build /app/dist/ ./
+
+# Salin public dan favicon
 COPY --from=build /app/public ./public
 COPY --from=build /app/favicon.png ./favicon.png
-
-# PENTING: Jangan salin folder /app/config karena berisi .ts
-# Strapi v5 otomatis akan membaca konfigurasi dari /app/dist/config
 
 RUN mkdir -p /app/public/uploads
 
 ENV NODE_ENV=production
 EXPOSE 1337
 
+# Jalankan strapi start (sekarang ia akan menemukan file .js di folder config/)
 CMD ["npm", "run", "start"]
