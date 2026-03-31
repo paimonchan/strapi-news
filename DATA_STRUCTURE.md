@@ -1,8 +1,8 @@
-# NewsWire Data Structure Reference
+# PMC News Data Structure Reference
 
 ## Overview
 
-This document outlines the complete data structure for the NewsWire application, showing how data flows from the Strapi backend to the Next.js frontend.
+This document outlines the complete data structure for the PMC News application, showing how data flows from the Strapi backend to the Next.js frontend.
 
 ## Data Model Architecture
 

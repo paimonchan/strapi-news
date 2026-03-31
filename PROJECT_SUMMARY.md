@@ -1,4 +1,4 @@
-# NewsWire Project Summary
+# PMC News Project Summary
 
 ## Quick Start
 

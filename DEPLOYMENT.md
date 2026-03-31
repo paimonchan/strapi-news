@@ -11,8 +11,8 @@ How to switch from SQLite (development) to PostgreSQL (production).
 
 ```sql
 CREATE USER strapi WITH PASSWORD 'your_secure_password';
-CREATE DATABASE newswire OWNER strapi;
-GRANT ALL PRIVILEGES ON DATABASE newswire TO strapi;
+CREATE DATABASE pmcnews OWNER strapi;
+GRANT ALL PRIVILEGES ON DATABASE pmcnews TO strapi;
 ```
 
 ## Step 2: Install the PostgreSQL Driver
@@ -29,7 +29,7 @@ Update your `.env` file (or set env vars in your hosting platform):
 DATABASE_CLIENT=postgres
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=newswire
+DATABASE_NAME=pmcnews
 DATABASE_USERNAME=strapi
 DATABASE_PASSWORD=your_secure_password
 DATABASE_SSL=false
@@ -39,7 +39,7 @@ For cloud-hosted PostgreSQL (e.g., Supabase, Neon, Railway), you can use a conne
 
 ```env
 DATABASE_CLIENT=postgres
-DATABASE_URL=postgresql://strapi:password@host:5432/newswire
+DATABASE_URL=postgresql://strapi:password@host:5432/pmcnews
 DATABASE_SSL=true
 ```
 

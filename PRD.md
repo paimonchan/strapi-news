@@ -1,4 +1,4 @@
-# NewsWire Backend - Product Requirements Document (PRD)
+# PMC News Backend - Product Requirements Document (PRD)
 
 > **How to use this file**: Each feature has a status tag. Change it to tell Claude what to build next.
 >
@@ -13,7 +13,7 @@
 
 ## 1. Project Summary
 
-**NewsWire Backend** is a headless CMS built with Strapi v5, serving as the data layer for a Next.js news website. It manages news articles, categories, and sources via REST API.
+**PMC News Backend** is a headless CMS built with Strapi v5, serving as the data layer for a Next.js news website. It manages news articles, categories, and sources via REST API.
 
 **Stack**: Strapi v5.36.0 · TypeScript · SQLite (dev) / PostgreSQL (prod) · REST API
 

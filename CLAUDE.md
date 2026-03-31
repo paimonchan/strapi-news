@@ -1,8 +1,8 @@
-# NewsWire Backend - Strapi v5 Headless CMS
+# PMC News - Strapi v5 Headless CMS
 
 ## Project Overview
 
-NewsWire Backend is a headless CMS built with **Strapi v5**, designed to manage and serve news articles, categories, and sources. It provides RESTful APIs for a news application with comprehensive data structure, relationships, and queries. Built with TypeScript for type safety and modern development experience.
+PMC News is a headless CMS built with **Strapi v5**, designed to manage and serve news articles, categories, and sources. It provides RESTful APIs for a news application with comprehensive data structure, relationships, and queries. Built with TypeScript for type safety and modern development experience.
 
 ## Tech Stack
 
@@ -480,7 +480,7 @@ npm run start
 DATABASE_CLIENT=postgres
 DATABASE_HOST=localhost
 DATABASE_PORT=5432
-DATABASE_NAME=newswire
+DATABASE_NAME=pmcnews
 DATABASE_USERNAME=user
 DATABASE_PASSWORD=password
 

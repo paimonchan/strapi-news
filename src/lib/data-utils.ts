@@ -1,5 +1,5 @@
 /**
- * Data Utility Functions for NewsWire Application
+ * Data Utility Functions for PMC News Application
  * Similar to src/lib/data.ts in Next.js version
  * Provides helpers for filtering, sorting, and retrieving articles
  */

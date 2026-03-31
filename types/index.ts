@@ -1,5 +1,5 @@
 /**
- * Core Data Types for NewsWire Application
+ * Core Data Types for PMC News Application
  * Based on CLAUDE.md specification
  */
 

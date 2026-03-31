@@ -1,4 +1,4 @@
-# NewsWire Backend - Strapi v5
+# PMC News - Strapi v5
 
 Headless CMS untuk mengelola dan menyajikan berita. Dibangun dengan Strapi v5 + TypeScript.
 
@@ -124,7 +124,7 @@ docker-compose exec strapi sh
 
 # Jalankan command di dalam container
 docker-compose exec strapi ls -la /app/dist/build
-docker-compose exec postgres psql -U strapi -d newswire
+docker-compose exec postgres psql -U strapi -d ${DATABASE_NAME}
 ```
 
 ### Local vs Production

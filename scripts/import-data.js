@@ -1,6 +1,6 @@
 // scripts/import-data.js
 /**
- * Data Import Script for NewsWire Application
+ * Data Import Script for PMC News Application
  * Creates comprehensive mock data for news articles, categories, and sources
  * 30+ articles across 6 categories with realistic content, authors, and images
  */
@@ -11,7 +11,7 @@ const STRAPI_BASE = "http://localhost:1337";
 const STRAPI_URL = `${STRAPI_BASE}/api`;
 
 // Admin credentials — set via env vars or fall back to defaults
-const ADMIN_EMAIL = process.env.STRAPI_ADMIN_EMAIL || "admin@newswire.local";
+const ADMIN_EMAIL = process.env.STRAPI_ADMIN_EMAIL || "admin@pmcnews.local";
 const ADMIN_PASSWORD = process.env.STRAPI_ADMIN_PASSWORD || "Admin1234!";
 
 let adminToken = null;
@@ -91,7 +91,7 @@ function daysAgo(days) {
 }
 
 async function runImport() {
-    console.log("🚀 Starting data import for NewsWire...\n");
+    console.log("🚀 Starting data import for PMC News...\n");
 
     try {
         // ====================================================================

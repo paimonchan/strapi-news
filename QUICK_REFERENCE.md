@@ -1,4 +1,4 @@
-# NewsWire Quick Reference Card
+# PMC News Quick Reference Card
 
 ## Quick Commands
 
@@ -128,7 +128,7 @@ GET /api/news?pagination[page]=1&pagination[pageSize]=10&populate=*
 ## Import Script Output
 
 ```
-🚀 Starting data import for NewsWire...
+🚀 Starting data import for PMC News...
 
 📰 Creating news sources...
 ✓ Created sources: 6 entries
