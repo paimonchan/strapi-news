@@ -51,8 +51,10 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 COPY --from=build /app/favicon.png ./favicon.png
 
-# JANGAN salin folder config/ atau src/ dari root build
-# Strapi v5 akan mencari di dalam folder dist/ secara otomatis
+# Salin folder config (dibutuhkan untuk database, server, dll)
+COPY --from=build /app/config ./config
+COPY --from=build /app/src ./src
+COPY --from=build /app/tsconfig.json ./tsconfig.json
 
 RUN mkdir -p /app/public/uploads
 
