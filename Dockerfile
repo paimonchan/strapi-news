@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y \
     pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
-# Set production environment early
+# Set production environment
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
@@ -18,7 +18,7 @@ WORKDIR /app
 # Copy manifest
 COPY package.json ./
 
-# Fix Rollup/SWC Linux binaries
+# Fix Rollup/SWC Linux binaries (Penting untuk build di Ubuntu)
 RUN npm config set fetch-retry-maxtimeout 600000 -g && \
     npm install --platform=linux --arch=x64 && \
     npm install @swc/core-linux-x64-gnu @rollup/rollup-linux-x64-gnu
@@ -27,7 +27,7 @@ RUN npm config set fetch-retry-maxtimeout 600000 -g && \
 COPY . .
 
 # Build the Strapi application
-# Di Strapi v5, ini menghasilkan folder dist/
+# Ini akan menghasilkan folder /app/dist
 RUN npm run build
 
 # Stage 2: Runtime
@@ -44,18 +44,20 @@ WORKDIR /app
 COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 
-# Salin folder dist (ini berisi server dan seringkali aset admin di Strapi v5)
+# Salin folder dist (HANYA hasil kompilasi)
 COPY --from=build /app/dist ./dist
+
+# Salin folder public (untuk aset statis)
 COPY --from=build /app/public ./public
 COPY --from=build /app/favicon.png ./favicon.png
 
-# Salin folder config asli (dibutuhkan Strapi untuk mendeteksi struktur proyek)
-COPY --from=build /app/config ./config
+# JANGAN salin folder config/ atau src/ dari root build
+# Strapi v5 akan mencari di dalam folder dist/ secara otomatis
 
 RUN mkdir -p /app/public/uploads
 
 ENV NODE_ENV=production
 EXPOSE 1337
 
-# Jalankan strapi start
+# Jalankan strapi start (akan mencari folder dist secara otomatis)
 CMD ["npm", "run", "start"]
