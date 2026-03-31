@@ -3,7 +3,7 @@
  */
 
 const path = require('path');
-require('dotenv').config(); // Load default .env
+require('dotenv').config({ path: path.join(__dirname, '../../../.env') }); // Load project root .env
 require('dotenv').config({ path: path.join(__dirname, '../.env.fetcher') }); // Load fetcher-specific config
 
 const env = process.env.NODE_ENV || 'development';

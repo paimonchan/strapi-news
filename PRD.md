@@ -182,16 +182,10 @@
 
 ---
 
-### 3.8 CORS Configuration for Production `[TODO]`
+### 3.8 CORS Configuration for Production `[DONE]`
 
 **Priority**: Medium (before deployment)
-**Why**: Current CORS is configured for localhost only. Production frontend will be on a different domain.
-
-**Requirements**:
-- Update `config/middlewares.ts` to support configurable CORS origins via env var
-- Add `CORS_ORIGIN` to `.env.example`
-- Default: `http://localhost:3000` (Next.js dev server)
-- Production: Set to deployed frontend URL
+**Why**: Production deployed via Docker with Caddy reverse proxy. CORS handled at proxy level.
 
 ---
 
@@ -277,27 +271,103 @@
 ### 3.17 PostgreSQL Migration Guide `[DONE]`
 
 **Priority**: Low (before deployment)
-**Why**: SQLite is fine for development but PostgreSQL is needed for production. A clear migration guide prevents issues.
-
-**Requirements**:
-- Document step-by-step migration from SQLite to PostgreSQL
-- Update `config/database.ts` to read from env vars with SQLite fallback
-- Add PostgreSQL env vars to `.env.example`
-- Test that import script works with PostgreSQL
-- Document in this PRD or a separate `DEPLOYMENT.md`
+**Why**: Production runs PostgreSQL via Docker Compose. Migration guide documented in `DEPLOYMENT.md`.
 
 ---
 
-### 3.18 API Token Authentication Setup `[TODO]`
+### 3.18 API Token Authentication Setup `[DONE]`
 
 **Priority**: Medium
-**Why**: Frontend uses `STRAPI_API_TOKEN` env var for authenticated requests. This should be documented and easy to set up.
+**Why**: API tokens configured for both local and production. News fetcher scripts use tokens for CRUD operations.
+
+---
+
+### 3.19 News Fetcher: Automated Scheduling `[TODO]`
+
+**Priority**: High
+**Why**: Currently news fetch + summarization is manual (run scripts + paste to AI). Should be automated on a schedule.
 
 **Requirements**:
-- Document how to create an API token in Strapi Admin
-- Specify required permissions (read-only for public content)
-- Add setup steps to this PRD or `INTEGRATION_GUIDE.md`
-- Ensure the import script uses the token if available
+- Set up cron job or scheduled task to run `fetch-news` daily
+- Options: Docker cron container, system crontab on server, or GitHub Actions
+- Auto-run steps 1-2 of OPERATIONAL_FLOW (delete-today + fetch)
+- Step 3-4 (AI summarization) still manual for now
+
+---
+
+### 3.20 News Fetcher: Auto-Summarization via API `[TODO]`
+
+**Priority**: High
+**Why**: Currently AI summarization requires manual copy-paste of raw_content to AI, then running batch-update. This should be automated.
+
+**Requirements**:
+- Create script that reads `raw_content` from Strapi, sends to AI API (Claude/OpenAI), writes summary back to `content`
+- Configurable AI provider via env var
+- Respect rate limits
+- Fallback: use `summary` field (from RSS) if AI fails
+- Run as final step after fetch-news
+
+---
+
+### 3.21 Add `slug` Field to Category Schema `[TODO]`
+
+**Priority**: Medium
+**Why**: Frontend routes use `/category/[slug]` and currently derives slug from `category.name.toLowerCase()`. A proper `slug` field is more robust.
+
+**Requirements**:
+- Add `slug` field to `src/api/category/content-types/category/schema.json` (type: `string`, required, unique)
+- Auto-generate slug from `name` on create
+- Update news-fetcher to set slug when creating categories
+- Ensure slug is returned in `/api/categories` responses
+
+---
+
+### 3.22 Image Scraping from Articles `[TODO]`
+
+**Priority**: Medium
+**Why**: Fetched articles use placeholder images. Real article images would improve the frontend significantly.
+
+**Requirements**:
+- Extract Open Graph image (`og:image`) or first article image during scraping
+- Store image URL in article's `image` field
+- Fallback to category-based placeholder if no image found
+- Handle relative URLs (convert to absolute)
+
+---
+
+### 3.23 Article Deduplication Improvement `[TODO]`
+
+**Priority**: Low
+**Why**: Current dedup checks URL only. Same story from different sources creates separate articles (e.g., "Spain airspace" from BBC and Al Jazeera).
+
+**Requirements**:
+- Add title similarity check (fuzzy matching) alongside URL check
+- Configurable threshold (e.g., 80% similarity = skip)
+- Option to merge/link related articles from different sources
+
+---
+
+### 3.24 Content Cleanup & Formatting `[TODO]`
+
+**Priority**: Low
+**Why**: Scraped `raw_content` contains noise (nav text, "ShareSave", timestamps, related article links). Cleaner raw content = better AI summaries.
+
+**Requirements**:
+- Improve content selectors in `config/sources.js`
+- Strip common noise patterns (share buttons, timestamps, related links)
+- Better markdown conversion (proper heading levels, list formatting)
+
+---
+
+### 3.25 Docker: Health Check Endpoint `[TODO]`
+
+**Priority**: Low
+**Why**: Docker Compose health checks currently only check if port is open. A proper health endpoint checks database connectivity.
+
+**Requirements**:
+- Create custom route `GET /api/health` returning `{ status: "ok", db: "connected" }`
+- Use in `docker-compose.yml` healthcheck instead of port check
+- Include in Caddy upstream health monitoring
 
 ---
 
@@ -348,23 +418,34 @@ These backend features are **blocking** frontend PRD features:
 
 ## 6. Priority Order (Suggested Build Sequence)
 
+### Already Done
+| Feature | Status |
+|---------|--------|
+| 3.1 Add `content` field | DONE |
+| 3.2 Add `image` field | DONE |
+| 3.3 Add `author` field | DONE |
+| 3.4 Better seed data | DONE |
+| 3.6 Search improvements | DONE |
+| 3.8 CORS for production | DONE |
+| 3.17 PostgreSQL guide | DONE |
+| 3.18 API token setup | DONE |
+
+### Next Up
 | Order | Feature | Priority | Blocks Frontend? |
 |-------|---------|----------|-----------------|
-| 1 | 3.1 Add `content` field | High | Yes — article body |
-| 2 | 3.2 Add `image` field | High | Yes — real images |
-| 3 | 3.4 Better seed data | Medium | Yes — all features |
-| 4 | 3.3 Add `author` field | Medium | Yes — author/source separation |
-| 5 | 3.14 Add `slug` to categories | Medium | Yes — dynamic navigation |
-| 6 | 3.8 CORS for production | Medium | Yes — deployment |
-| 7 | 3.6 Search improvements | Medium | Yes — search on content |
-| 8 | 3.18 API token setup | Medium | No |
-| 9 | 3.5 Category counts | Low | No |
-| 10 | 3.7 Rate limiting | Low | No |
-| 11 | 3.9 Response caching | Low | No |
-| 12 | 3.15 Fix v4/v5 docs | Low | No |
-| 13 | 3.16 Add check-api script | Low | No |
-| 14 | 3.17 PostgreSQL guide | Low | No |
-| 15 | 4.3 Security hardening | Ongoing | No |
+| 1 | 3.19 News Fetcher: Automated Scheduling | High | No |
+| 2 | 3.20 News Fetcher: Auto-Summarization | High | No |
+| 3 | 3.21 Add `slug` to categories | Medium | Yes — dynamic navigation |
+| 4 | 3.22 Image Scraping from Articles | Medium | Yes — real images |
+| 5 | 3.24 Content Cleanup & Formatting | Low | No |
+| 6 | 3.23 Article Deduplication | Low | No |
+| 7 | 3.5 Category counts API | Low | No |
+| 8 | 3.7 Rate limiting | Low | No |
+| 9 | 3.9 Response caching | Low | No |
+| 10 | 3.25 Docker Health Check | Low | No |
+| 11 | 3.15 Fix v4/v5 docs | Low | No |
+| 12 | 3.16 Add check-api script | Low | No |
+| 13 | 4.3 Security hardening | Ongoing | No |
 
 ---
 
