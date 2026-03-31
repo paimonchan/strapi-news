@@ -18,7 +18,7 @@ WORKDIR /app
 # Copy manifest
 COPY package.json ./
 
-# Clean installation for Linux x64
+# Paksa instalasi binary rollup dan swc untuk linux x64 (fix error sebelumnya)
 RUN npm config set fetch-retry-maxtimeout 600000 -g && \
     npm install --platform=linux --arch=x64 && \
     npm install @swc/core-linux-x64-gnu @rollup/rollup-linux-x64-gnu
@@ -27,7 +27,7 @@ RUN npm config set fetch-retry-maxtimeout 600000 -g && \
 COPY . .
 
 # Build the Strapi application
-# This generates the /app/dist folder
+# Langkah ini krusial untuk menghasilkan folder /app/dist yang berisi .js
 RUN npm run build
 
 # Remove development dependencies after build
@@ -49,10 +49,8 @@ COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
+COPY --from=build /app/config ./config
 COPY --from=build /app/favicon.png ./favicon.png
-
-# JANGAN salin folder 'src' atau 'config' yang berisi file .ts
-# Strapi v5 akan membaca folder 'dist' secara otomatis.
 
 # Ensure necessary directories exist for media uploads
 RUN mkdir -p /app/public/uploads
@@ -60,5 +58,5 @@ RUN mkdir -p /app/public/uploads
 ENV NODE_ENV=production
 EXPOSE 1337
 
-# Perintah 'start' akan menjalankan Strapi dari folder dist
+# Menggunakan 'start' yang akan menjalankan Strapi dari folder 'dist'
 CMD ["npm", "run", "start"]
