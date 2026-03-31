@@ -26,11 +26,8 @@ RUN npm config set fetch-retry-maxtimeout 600000 -g && \
 # Copy source files
 COPY . .
 
-# Install dependencies for external scripts separately
-RUN cd scripts/news-fetcher && npm install
-
 # Build the Strapi application
-# This will generate the /app/dist folder containing compiled JS files
+# This generates the /app/dist folder
 RUN npm run build
 
 # Remove development dependencies after build
@@ -52,14 +49,10 @@ COPY --from=build /app/package.json ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
-COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/favicon.png ./favicon.png
 
-# IMPORTANT: Do NOT copy the original 'config' folder (which has .ts files)
-# Strapi will automatically use the compiled config from 'dist/config'
-# But we copy it just in case Strapi needs other assets, 
-# however, the compiled dist takes precedence.
-COPY --from=build /app/config ./config
+# JANGAN salin folder 'src' atau 'config' yang berisi file .ts
+# Strapi v5 akan membaca folder 'dist' secara otomatis.
 
 # Ensure necessary directories exist for media uploads
 RUN mkdir -p /app/public/uploads
@@ -67,5 +60,5 @@ RUN mkdir -p /app/public/uploads
 ENV NODE_ENV=production
 EXPOSE 1337
 
-# Use 'start' which runs from the 'dist' folder
+# Perintah 'start' akan menjalankan Strapi dari folder dist
 CMD ["npm", "run", "start"]
