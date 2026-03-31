@@ -1,61 +1,206 @@
-# 🚀 Getting started with Strapi
+# NewsWire Backend - Strapi v5
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+Headless CMS untuk mengelola dan menyajikan berita. Dibangun dengan Strapi v5 + TypeScript.
 
-### `develop`
+## Quick Start (Tanpa Docker)
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
-
-```
+```bash
+npm install
 npm run develop
-# or
-yarn develop
 ```
 
-### `start`
+Akses admin panel di `http://localhost:1337/admin`.
 
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
+## Docker
 
-```
-npm run start
-# or
-yarn start
-```
-
-### `build`
-
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+### Arsitektur
 
 ```
-npm run build
-# or
-yarn build
+Caddy (reverse proxy, HTTPS)
+  ├── Strapi  (port 1337)
+  ├── NextJS  (port 3000)
+  └── PostgreSQL (port 5432)
 ```
 
-## ⚙️ Deployment
+### Prerequisites
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+- Docker & Docker Compose
+- File `.env` di root project (copy dari `.env.example`)
 
+### Setup Pertama Kali
+
+```bash
+# Copy dan isi environment variables
+cp .env.example .env
+
+# Build dan jalankan semua service
+docker-compose build
+docker-compose up -d
+
+# Cek status
+docker-compose ps
+
+# Lihat logs
+docker-compose logs -f
 ```
-yarn strapi deploy
+
+### Menjalankan Semua Service
+
+```bash
+# Start semua (Caddy + Strapi + NextJS + PostgreSQL)
+docker-compose up -d
+
+# Stop semua
+docker-compose down
+
+# Restart semua
+docker-compose restart
 ```
 
-## 📚 Learn more
+### Menjalankan Service Tertentu
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+```bash
+# Strapi saja (+ PostgreSQL karena dependency)
+docker-compose up -d strapi
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
+# NextJS saja
+docker-compose up -d nextjs
 
-## ✨ Community
+# PostgreSQL saja
+docker-compose up -d postgres
 
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
+# Caddy saja
+docker-compose up -d caddy
+```
 
----
+### Rebuild Service
 
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+```bash
+# Rebuild satu service (setelah ubah code/Dockerfile)
+docker-compose build strapi
+docker-compose up -d strapi
+
+# Rebuild tanpa cache (jika ada masalah)
+docker-compose build --no-cache strapi
+
+# Rebuild dan langsung jalankan
+docker-compose up -d --build strapi
+```
+
+### Logs
+
+```bash
+# Semua logs
+docker-compose logs -f
+
+# Log service tertentu
+docker-compose logs -f strapi
+docker-compose logs -f nextjs
+docker-compose logs -f caddy
+docker-compose logs -f postgres
+
+# Log 50 baris terakhir
+docker-compose logs strapi | tail -50
+```
+
+### Restart / Stop Service Tertentu
+
+```bash
+# Restart satu service
+docker-compose restart strapi
+
+# Stop satu service (tanpa hapus container)
+docker-compose stop strapi
+
+# Stop dan hapus container
+docker-compose rm -sf strapi
+```
+
+### Masuk ke Container
+
+```bash
+# Shell ke dalam container Strapi
+docker-compose exec strapi sh
+
+# Jalankan command di dalam container
+docker-compose exec strapi ls -la /app/dist/build
+docker-compose exec postgres psql -U strapi -d newswire
+```
+
+### Local vs Production
+
+#### Lokal
+
+Di lokal, `docker-compose.override.yml` otomatis di-load untuk expose port langsung:
+
+- Strapi: `http://localhost:1337`
+- NextJS: `http://localhost:3000`
+
+File override ini tidak di-commit ke git.
+
+#### Production
+
+Di production (tanpa override), semua service hanya bisa diakses via Caddy (HTTPS):
+
+- Strapi: `https://<STRAPI_DOMAIN>`
+- NextJS: `https://<NEXTJS_DOMAIN>`
+
+Domain dikonfigurasi di `.env`:
+```env
+STRAPI_DOMAIN=adm.example.com
+NEXTJS_DOMAIN=news.example.com
+```
+
+### Troubleshooting Docker
+
+#### Container tidak bisa start
+```bash
+# Cek logs untuk error
+docker-compose logs strapi
+
+# Rebuild dari awal
+docker-compose build --no-cache strapi
+docker-compose rm -sf strapi
+docker-compose up -d strapi
+```
+
+#### NextJS error "Strapi Backend Unavailable"
+```bash
+# Biasanya DNS internal Docker belum ready, restart bareng
+docker-compose restart strapi nextjs
+```
+
+#### Database connection error
+```bash
+# Pastikan PostgreSQL sudah healthy
+docker-compose ps postgres
+
+# Restart PostgreSQL lalu Strapi
+docker-compose restart postgres
+docker-compose restart strapi
+```
+
+#### Port sudah dipakai
+```bash
+# Cek port yang dipakai
+# Linux/Mac:
+lsof -i :1337
+# Windows:
+netstat -ano | findstr :1337
+
+# Stop service yang pakai port tersebut, atau ubah port di docker-compose.override.yml
+```
+
+#### Error `ContainerConfig` (docker-compose v1)
+```bash
+# Hapus container lama dulu
+docker-compose rm -sf strapi
+docker-compose up -d strapi
+```
+
+## News Fetcher
+
+Lihat dokumentasi lengkap di:
+- `scripts/news-fetcher/OPERATIONAL_FLOW.md` — Panduan operasional harian
+- `scripts/news-fetcher/MAINTENANCE_GUIDE.md` — Panduan maintenance
+- `scripts/news-fetcher/README.md` — Dokumentasi teknis

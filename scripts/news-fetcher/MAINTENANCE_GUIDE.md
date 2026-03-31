@@ -2,6 +2,19 @@
 
 Panduan ini digunakan untuk memantau, memperbaiki, dan memastikan sistem scraping berjalan lancar.
 
+## 0. Deployment Notes
+
+### Docker
+- Script dependencies (`cheerio`, `sanitize-html`, `turndown`, `xml2js`, `dotenv`) diinstall terpisah di `scripts/news-fetcher/node_modules` (bukan di root `package.json`). Ini mencegah konflik dengan Strapi admin Vite build.
+- `@strapi/plugin-cloud` **tidak boleh** ada di `package.json` — menyebabkan error `checkUserHasPermissions` di admin panel production build.
+- Lokal: gunakan `docker-compose.override.yml` untuk expose port (otomatis di-ignore di production).
+
+### Script Dependencies
+Jika perlu install ulang dependencies script:
+```bash
+cd scripts/news-fetcher && npm install
+```
+
 ## 1. Monitoring: Memastikan Scraping Berjalan
 Saat menjalankan `npm run fetch-news`, perhatikan baris output:
 *   **Normal**: `✨ [Full-Text Success] Size: 5000+ chars`

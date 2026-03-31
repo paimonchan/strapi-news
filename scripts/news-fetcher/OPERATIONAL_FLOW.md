@@ -12,12 +12,34 @@ AI Summary --> content (ringkasan berbobot untuk ditampilkan ke user)
 - `raw_content`: Field untuk menyimpan teks asli/mentah hasil fetch atau scrape. Tidak ditampilkan ke end-user.
 - `content`: Field untuk menyimpan ringkasan yang sudah diproses AI. Ini yang ditampilkan ke end-user.
 
+## Environment
+
+Script default connect ke `http://localhost:1337` (lokal). Untuk production, set env variable:
+
+```bash
+# Production
+export STRAPI_URL=https://adm.paimonchan.com
+export STRAPI_API_TOKEN=<token_production>
+
+# Atau inline per-command
+STRAPI_URL=https://adm.paimonchan.com STRAPI_API_TOKEN=<token> npm run fetch-news -- --sources=bbc-world --limit=5
+```
+
+Token tersimpan di `.env` root project:
+- `STRAPI_API_TOKEN` — untuk lokal
+- `STRAPI_API_TOKEN_PRODUCTION` — untuk production
+- `STRAPI_URL_PRODUCTION` — URL production
+
 ## 1. Persiapan: Bersihkan Data Hari Ini
 
 Pastikan tidak ada duplikasi data sebelum penarikan baru.
 
 ```bash
+# Lokal
 npm run delete-today
+
+# Production
+STRAPI_URL=$STRAPI_URL_PRODUCTION STRAPI_API_TOKEN=$STRAPI_API_TOKEN_PRODUCTION npm run delete-today
 ```
 
 ## 2. Penarikan Data (Fetch & Scrape)
