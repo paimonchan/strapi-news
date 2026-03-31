@@ -21,7 +21,6 @@
     "delete-today": "node scripts/news-fetcher/scripts/delete-today.js"
   },
   "dependencies": {
-    "@strapi/plugin-cloud": "5.39.0",
     "@strapi/plugin-users-permissions": "5.39.0",
     "@strapi/strapi": "5.39.0",
     "better-sqlite3": "12.4.1",
