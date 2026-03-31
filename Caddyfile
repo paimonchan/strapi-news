@@ -5,9 +5,11 @@
 }
 
 {$STRAPI_DOMAIN} {
+	encode gzip zstd
 	reverse_proxy strapi:1337
 }
 
 {$NEXTJS_DOMAIN} {
+	encode gzip zstd
 	reverse_proxy nextjs:3000
 }
