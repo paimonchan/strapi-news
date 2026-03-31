@@ -15,15 +15,13 @@ ENV NODE_ENV=${NODE_ENV}
 
 WORKDIR /app
 
-# Copy manifests
-COPY package.json package-lock.json ./
+# Copy manifest
+COPY package.json ./
 
-# Aggressive NPM configuration to prevent timeout and force correct binaries
+# Clean installation for Linux x64
 RUN npm config set fetch-retry-maxtimeout 600000 -g && \
-    npm install --include=optional --platform=linux --arch=x64
-
-# Force install the specific SWC Linux x64 binary to bypass auto-detection issues
-RUN npm install @swc/core-linux-x64-gnu
+    npm install --platform=linux --arch=x64 && \
+    npm install @swc/core-linux-x64-gnu @rollup/rollup-linux-x64-gnu
 
 # Copy source files
 COPY . .
