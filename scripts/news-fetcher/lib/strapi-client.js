@@ -202,7 +202,7 @@ async function createArticle(articleData, categoryId, sourceId, skipDuplicateChe
         const created = await createEntry('news-articles', {
             title: articleData.title.substring(0, 250),
             summary: articleData.summary,
-            content: articleData.rawContent, // Simpan full text di kolom content
+            raw_content: articleData.rawContent, // Simpan full text di raw_content, nanti diringkas ke content
             url: articleData.url,
             image: articleData.image,
             author: articleData.author,

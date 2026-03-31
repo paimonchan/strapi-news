@@ -1,60 +1,82 @@
 # News Fetcher Operational Flow
 
-Panduan langkah-langkah untuk siklus operasional harian: menarik, membersihkan, dan memasukkan berita ke Strapi.
+Panduan langkah-langkah untuk siklus operasional harian: menarik, meringkas, dan memasukkan berita ke Strapi.
+
+## Data Flow
+
+```
+RSS/Scrape --> raw_content (teks mentah dari sumber)
+AI Summary --> content (ringkasan berbobot untuk ditampilkan ke user)
+```
+
+- `raw_content`: Field untuk menyimpan teks asli/mentah hasil fetch atau scrape. Tidak ditampilkan ke end-user.
+- `content`: Field untuk menyimpan ringkasan yang sudah diproses AI. Ini yang ditampilkan ke end-user.
 
 ## 1. Persiapan: Bersihkan Data Hari Ini
-Penting untuk memastikan tidak ada duplikasi data sebelum melakukan penarikan baru.
+
+Pastikan tidak ada duplikasi data sebelum penarikan baru.
+
 ```bash
-# Menghapus artikel yang dibuat hari ini (UTC)
 npm run delete-today
 ```
 
-## 2. Operasional: Menarik Berita (Fetch & Scrape)
+## 2. Penarikan Data (Fetch & Scrape)
 
-### A. Menarik Berita dari RSS (dengan Full-Text Scraping)
-Gunakan perintah ini untuk mengambil berita dari RSS feed dan secara otomatis mengunjungi URL artikel untuk mengambil teks lengkapnya.
+Menarik data mentah (Full-Text) ke Strapi. Data disimpan di field `raw_content`.
+
+### A. Dari RSS Feed (dengan Full-Text Scraping)
+
 ```bash
 # Contoh: Tarik 5 berita dari BBC dan Al Jazeera
 npm run fetch-news -- --sources=bbc-world,al-jazeera --limit=5
 ```
 
-### B. Menarik Berita dari Website (Web Scraping)
-Gunakan jika situs berita tidak menyediakan RSS feed atau untuk menambah coverage.
+### B. Dari Website (Web Scraping)
+
 ```bash
 # Contoh: Scrape TechCrunch
 npm run scrape-news -- --sites=techcrunch --limit=3
 ```
 
-## 3. Pengecekan & Ringkasan Berbobot (Summarization)
+## 3. Inspeksi Data Mentah
 
-Setelah berita masuk ke Strapi:
+Setelah berita masuk ke Strapi, ambil data `raw_content` untuk dibaca oleh AI.
 
-1. **Cek Summary Log**: 
-   Pastikan muncul pesan `✨ [Full-Text Success]`.
-   
-2. **Buat Ringkasan (Summarization)**:
-   - Gunakan `node scripts/news-fetcher/scripts/get-today-content.js` untuk melihat teks lengkap berita terbaru.
-   - Buat ringkasan berbobot (2-3 paragraf) berdasarkan teks tersebut.
-   - Jalankan `node scripts/news-fetcher/scripts/update-content.js <documentId> "<Ringkasan Baru>"` untuk memperbarui kolom `content`.
+```bash
+node scripts/news-fetcher/scripts/get-today-content.js
+```
 
-3. **Cek Strapi Admin**:
-   - Pastikan field `content` (ringkasan berbobot) dan `raw_content` (isi lengkap Markdown) sudah terisi dengan benar.
+Copy hasil output script ini, berikan kepada AI untuk dibuatkan ringkasan.
 
+## 4. Summarization & Update
 
----
+AI membuat ringkasan dari `raw_content`, lalu update ke field `content`.
 
-## 4. Troubleshooting Workflow
-Jika terjadi masalah saat penarikan data:
+### Per artikel:
 
-*   **Jika data kosong/pendek**:
-    1. Cek `MAINTENANCE_GUIDE.md`.
-    2. Periksa apakah situs target mengubah desain HTML-nya (perlu update `contentSelector`).
-    3. Jalankan `npm run fetch-news -- --sources=SOURCE_NAME --limit=1` untuk testing satu artikel saja.
+```bash
+node scripts/news-fetcher/scripts/update-content.js <DOCUMENT_ID> "<Ringkasan>"
+```
 
-*   **Jika `fetch` gagal (Error Network)**:
-    1. Pastikan server Strapi berjalan (`npm run develop`).
-    2. Cek koneksi internet.
-    3. Cek apakah situs target memblokir IP kamu (coba buka lewat browser).
+### Batch (semua artikel sekaligus):
 
-*   **Jika `Invalid key slug`**:
-    1. Pastikan skema kategori di Strapi (di admin panel atau `schema.json`) tidak mewajibkan field yang tidak ada di script (seperti `slug`).
+```bash
+node scripts/news-fetcher/scripts/batch-update.js
+```
+
+> **Note:** `batch-update.js` berisi array ringkasan yang sudah digenerate AI. Edit file ini dengan ringkasan baru sebelum dijalankan.
+
+## 5. Troubleshooting
+
+### Data kosong/pendek
+1. Cek `MAINTENANCE_GUIDE.md`.
+2. Periksa apakah situs target mengubah desain HTML-nya (perlu update `contentSelector`).
+3. Jalankan `npm run fetch-news -- --sources=SOURCE_NAME --limit=1` untuk testing satu artikel.
+
+### Fetch gagal (Error Network)
+1. Pastikan server Strapi berjalan (`npm run develop`).
+2. Cek koneksi internet.
+3. Cek apakah situs target memblokir IP (coba buka lewat browser).
+
+### Invalid key slug
+1. Pastikan skema kategori di Strapi tidak mewajibkan field yang tidak ada di script (seperti `slug`).
