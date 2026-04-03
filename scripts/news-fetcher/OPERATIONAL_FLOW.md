@@ -96,38 +96,59 @@ npm run scrape-news -- --sites=techcrunch --limit=3
 Setelah berita masuk ke Strapi, ambil data `raw_content` untuk dibaca oleh AI.
 
 ```bash
-# Lokal
-node scripts/news-fetcher/scripts/get-today-content.js
+# Lokal (Bash)
+node scripts/news-fetcher/scripts/get-today-content.js > today-content.json
 
-# Production
-NODE_ENV=production node scripts/news-fetcher/scripts/get-today-content.js
+# Lokal (PowerShell)
+node scripts/news-fetcher/scripts/get-today-content.js | Out-File today-content.json -Encoding utf8
+
+# Production (Bash)
+NODE_ENV=production node scripts/news-fetcher/scripts/get-today-content.js > today-content-prod.json
+
+# Production (PowerShell)
+$env:NODE_ENV = "production"; node scripts/news-fetcher/scripts/get-today-content.js | Out-File today-content-prod.json -Encoding utf8
 ```
 
-Script mendukung pagination (otomatis ambil semua halaman jika >100 artikel).
+> **Warning (Windows):** Jika menggunakan `>` di PowerShell, file mungkin tersimpan dalam format UTF-16. Gunakan `| Out-File -Encoding utf8` agar bisa dibaca dengan benar oleh Node.js.
 
 Copy hasil output script ini, berikan kepada AI untuk dibuatkan ringkasan.
 
-## 4. Summarization & Update
+## 4. Summarization & Update (AI Role)
+
+Berikan file JSON ke AI dengan prompt:
+*"Summarize each article in 2-5 detailed paragraphs based on the provided rawContent. Focus on key facts, context, and implications. Format as a JSON array for batch-update.js."*
 
 AI membuat ringkasan dari `raw_content`, lalu update ke field `content`.
 
 ### Per artikel:
-
 ```bash
+# Bash
 node scripts/news-fetcher/scripts/update-content.js <DOCUMENT_ID> "<Ringkasan>"
+
+# PowerShell
+$summary = "Isi ringkasan..."; node scripts/news-fetcher/scripts/update-content.js <DOCUMENT_ID> $summary
 ```
 
 ### Batch (semua artikel sekaligus):
+Edit `updates` array di `scripts/news-fetcher/scripts/batch-update.js`:
 
-```bash
-# Lokal
-node scripts/news-fetcher/scripts/batch-update.js
-
-# Production
-NODE_ENV=production node scripts/news-fetcher/scripts/batch-update.js
+```javascript
+const updates = [
+    { documentId: "abc123id", content: "Ringkasan 2-5 paragraf..." },
+    // ...
+];
 ```
 
-> **Note:** `batch-update.js` berisi mapping title→summary. Script mengambil artikel hari ini dari Strapi, mencocokkan berdasarkan judul, lalu update field `content`. Pendekatan ini menghindari masalah perbedaan `documentId` antara lokal dan production.
+Lalu jalankan:
+```bash
+# Lokal
+npm run batch-update
+
+# Production
+$env:NODE_ENV = "production"; npm run batch-update
+```
+
+> **Pro-Tip:** Selalu kosongkan kembali array `updates` di `batch-update.js` setelah selesai digunakan agar file tetap bersih.
 
 ## 5. Quick Command (Full Cycle)
 
