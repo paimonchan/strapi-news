@@ -15,6 +15,19 @@ Jika perlu install ulang dependencies script:
 cd scripts/news-fetcher && npm install
 ```
 
+### Environment (NODE_ENV)
+- Semua script (`fetch-news`, `delete-today`, `get-today-content`, `batch-update`) mendukung `NODE_ENV=production`.
+- Script otomatis memilih `STRAPI_URL_PRODUCTION` dan `STRAPI_API_TOKEN_PRODUCTION` dari `.env` root project.
+- Script dijalankan dari local machine, bukan dari server production.
+- `.env` path di-resolve via `path.join(__dirname, '../../../.env')` — tidak bergantung pada CWD.
+
+### Sumber yang Pernah Diganti
+| Lama | Baru | Alasan |
+|------|------|--------|
+| Reuters (`reutersagency.com/feed/`) | CNBC | RSS 404 |
+| Healthline (`healthline.com/health-news`) | NPR Health | RSS parse error |
+| EdSurge (`edsurge.com/feeds/rss`) | NPR Education | RSS 404 |
+
 ## 1. Monitoring: Memastikan Scraping Berjalan
 Saat menjalankan `npm run fetch-news`, perhatikan baris output:
 *   **Normal**: `✨ [Full-Text Success] Size: 5000+ chars`
@@ -53,6 +66,7 @@ console.log($('div.your-new-selector').text().substring(0, 500));
 | **Check Strapi Admin** | Seminggu sekali | Cek apakah isi artikel masih lengkap. |
 | **Log Review** | Setiap kali fetch | Lihat apakah banyak muncul error `Failed to fetch`. |
 | **Selector Audit** | Sebulan sekali | Cek apakah selector di `sources.js` masih akurat. |
+| **RSS URL Check** | Sebulan sekali | Test RSS URL masih aktif (bukan 404/parse error). |
 
 ---
 

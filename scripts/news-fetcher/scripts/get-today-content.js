@@ -2,9 +2,16 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 require('dotenv').config({ path: path.join(__dirname, '../.env.fetcher') });
 
+const env = process.env.NODE_ENV || 'development';
+const isProd = env === 'production';
+
 async function fetchTodayArticles() {
-    const STRAPI_URL = process.env.STRAPI_URL || 'http://127.0.0.1:1337';
-    const API_TOKEN = process.env.STRAPI_API_TOKEN;
+    const STRAPI_URL = isProd
+        ? process.env.STRAPI_URL_PRODUCTION
+        : (process.env.STRAPI_URL || 'http://127.0.0.1:1337');
+    const API_TOKEN = isProd
+        ? process.env.STRAPI_API_TOKEN_PRODUCTION
+        : process.env.STRAPI_API_TOKEN;
 
     const now = new Date();
     const today = now.toISOString().split('T')[0];
