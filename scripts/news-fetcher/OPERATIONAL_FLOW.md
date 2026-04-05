@@ -150,29 +150,40 @@ $env:NODE_ENV = "production"; npm run batch-update
 
 > **Pro-Tip:** Selalu kosongkan kembali array `updates` di `batch-update.js` setelah selesai digunakan agar file tetap bersih.
 
-## 5. Quick Command (Full Cycle)
+## 5. Fast-Track Production Flow (Agent Instruction)
 
-### Lokal
-```bash
-cd scripts/news-fetcher
-npm run delete-today
-npm run fetch-news -- --limit=10
-node scripts/get-today-content.js > today-content.json
-# Berikan today-content.json ke AI, update batch-update.js dengan ringkasan
-node scripts/batch-update.js
+Untuk sinkronisasi cepat di Produksi, jalankan perintah gabungan ini dari **root directory**:
+
+```powershell
+# 1. Clean, Fetch (10/source), & Extract Raw Content
+$env:NODE_ENV = "production"; npm run delete-today; npm run fetch-news -- --limit=10; node scripts/news-fetcher/scripts/get-today-content.js | Out-File today-content-prod.json -Encoding utf8
 ```
 
-### Production
-```bash
-cd scripts/news-fetcher
-NODE_ENV=production npm run delete-today
-NODE_ENV=production npm run fetch-news -- --limit=10
-NODE_ENV=production node scripts/get-today-content.js > today-content.json
-# Berikan today-content.json ke AI, update batch-update.js dengan ringkasan
-NODE_ENV=production node scripts/batch-update.js
+### Langkah Update (AI Role):
+1.  **Analyze**: Baca `today-content-prod.json`, buat ringkasan 2-5 paragraf untuk artikel terbaru/penting.
+2.  **Execute**: Jangan edit `batch-update.js` (untuk menghindari konflik git). Buatlah file temporer `manual-update-prod.js` yang berisi array `updates` dan logika `fetch(PUT)`.
+3.  **Run & Clean**: Jalankan `node manual-update-prod.js` lalu hapus file tersebut beserta `today-content-prod.json`.
+
+### Tips Akses:
+- **Token**: Gunakan `STRAPI_API_TOKEN_PRODUCTION` dari `.env`.
+- **Encoding**: Di PowerShell, selalu gunakan `| Out-File -Encoding utf8` untuk output JSON agar tidak menjadi UTF-16.
+- **Root Context**: Jalankan semua perintah dari root folder project agar path `scripts/news-fetcher/scripts/...` valid.
+
+## 6. Fast-Track Local Flow (Agent Instruction)
+
+To quickly sync in Local, run this combined command from the **root directory**:
+
+```powershell
+# 1. Clean, Fetch (10/source), & Extract Raw Content
+npm run delete-today; npm run fetch-news -- --limit=10; node scripts/news-fetcher/scripts/get-today-content.js | Out-File today-content-local.json -Encoding utf8
 ```
 
-## 6. Troubleshooting
+### Update Steps (AI Role):
+1.  **Analyze**: Read `today-content-local.json`, create 2-5 paragraph summaries for latest/important articles.
+2.  **Execute**: Create a temporary file `manual-update-local.js` with the `updates` array and `fetch(PUT)` logic.
+3.  **Run & Clean**: Run `node manual-update-local.js` then delete it along with `today-content-local.json`.
+
+## 7. Troubleshooting
 
 ### Data kosong/pendek
 1. Cek `MAINTENANCE_GUIDE.md`.
