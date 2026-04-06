@@ -115,6 +115,10 @@ Copy hasil output script ini, berikan kepada AI untuk dibuatkan ringkasan.
 
 ## 4. Summarization & Update (AI Role)
 
+AI creates summaries from `raw_content` and updates the `content` field.
+
+> **✨ Enhancement:** The fetcher now automatically attempts to extract the **real article image** from metadata (OpenGraph) during the full-text scraping phase, replacing the initial Picsum placeholder.
+
 Berikan file JSON ke AI dengan prompt:
 *"Summarize each article in 2-5 detailed paragraphs based on the provided rawContent. Focus on key facts, context, and implications. Format as a JSON array for batch-update.js."*
 

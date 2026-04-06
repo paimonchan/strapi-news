@@ -130,12 +130,17 @@ async function fetchFullContent(url, selector) {
         const html = await response.text();
         const $ = cheerio.load(html);
         
+        // 1. Try to find a better image in meta tags
+        let image = $('meta[property="og:image"]').attr('content') || 
+                    $('meta[name="twitter:image"]').attr('content') || 
+                    $('link[rel="image_src"]').attr('href') || null;
+
         const contentEl = $(selector);
-        if (contentEl.length === 0) return null;
+        if (contentEl.length === 0) return { content: null, image };
 
         // Get the HTML content
         let rawHtml = contentEl.html();
-        if (!rawHtml) return null;
+        if (!rawHtml) return { content: null, image };
 
         // Use sanitize-html for professional cleaning
         const cleanHtml = sanitizeHtml(rawHtml, {
@@ -150,9 +155,11 @@ async function fetchFullContent(url, selector) {
         let markdown = turndownService.turndown(cleanHtml);
 
         // Final cleanup of whitespace
-        return markdown
+        const content = markdown
             .replace(/\n\s*\n\s*\n/g, '\n\n') // Max double newlines
             .trim();
+
+        return { content, image };
     } catch (error) {
         console.error(`✗ Error fetching full content from ${url}: ${error.message}`);
         return null;

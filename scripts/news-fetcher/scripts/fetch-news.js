@@ -123,10 +123,22 @@ async function processRSSSources() {
             // TRY FULL-TEXT SCRAPING
             if (source.contentSelector) {
                 console.log(`  🔍 Fetching full content for: ${article.title.substring(0, 40)}...`);
-                const fullContent = await fetchFullContent(article.url, source.contentSelector);
-                if (fullContent && fullContent.length > article.content.length) {
-                    article.rawContent = fullContent;
-                    console.log(`  ✨ [Full-Text Success] Size: ${fullContent.length} chars`);
+                const result = await fetchFullContent(article.url, source.contentSelector);
+                
+                if (result) {
+                    // Update content if found
+                    if (result.content && result.content.length > article.content.length) {
+                        article.rawContent = result.content;
+                        console.log(`  ✨ [Full-Text Success] Size: ${result.content.length} chars`);
+                    } else {
+                        article.rawContent = article.content;
+                    }
+
+                    // Update image if we have a placeholder but found a real image
+                    if (result.image && article.image.includes('picsum.photos')) {
+                        article.image = result.image;
+                        console.log(`  🖼️  [Image Found] Using real article image`);
+                    }
                 } else {
                     article.rawContent = article.content;
                 }

@@ -135,10 +135,18 @@ async function main() {
             
             if (contentSelector) {
                 console.log(`  🔍 Fetching full content for: ${article.title.substring(0, 40)}...`);
-                const fullContent = await fetchFullContent(article.url, contentSelector);
-                if (fullContent && fullContent.length > article.content.length) {
-                    article.content = fullContent;
-                    console.log(`  ✨ [Full-Text Success] Size: ${fullContent.length} chars`);
+                const result = await fetchFullContent(article.url, contentSelector);
+                
+                if (result) {
+                    if (result.content && result.content.length > article.content.length) {
+                        article.content = result.content;
+                        console.log(`  ✨ [Full-Text Success] Size: ${result.content.length} chars`);
+                    }
+                    
+                    if (result.image && article.image.includes('picsum.photos')) {
+                        article.image = result.image;
+                        console.log(`  🖼️  [Image Found] Using real article image`);
+                    }
                 }
                 
                 await new Promise(resolve => setTimeout(resolve, 1000));

@@ -219,11 +219,40 @@ async function createArticle(articleData, categoryId, sourceId, skipDuplicateChe
     }
 }
 
+/**
+ * Update entry in Strapi
+ */
+async function updateEntry(endpoint, id, data) {
+    const token = await getToken();
+    
+    try {
+        const response = await fetch(`${STRAPI_URL}/${endpoint}/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ data }),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.error?.message || `Failed to update ${endpoint}/${id}`);
+        }
+
+        return result.data;
+    } catch (error) {
+        console.error(`✗ Error updating ${endpoint}/${id}:`, error.message);
+        throw error;
+    }
+}
+
 module.exports = {
     authenticate,
     getToken,
     createEntry,
     findEntry,
+    updateEntry,
     getOrCreateCategory,
     getOrCreateSource,
     articleExists,
