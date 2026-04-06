@@ -173,6 +173,10 @@ $env:NODE_ENV = "production"; npm run delete-today; npm run fetch-news -- --limi
 - **Encoding**: Di PowerShell, selalu gunakan `| Out-File -Encoding utf8` untuk output JSON agar tidak menjadi UTF-16.
 - **Root Context**: Jalankan semua perintah dari root folder project agar path `scripts/news-fetcher/scripts/...` valid.
 
+### Technical Dependencies (For Agents):
+- **Real Image Extraction**: Only triggers if `contentSelector` is defined for the source in `config/sources.js`.
+- **Library Features**: Use `strapi.updateEntry(endpoint, documentId, data)` from `lib/strapi-client.js` for surgical updates to existing articles.
+
 ## 6. Fast-Track Local Flow (Agent Instruction)
 
 To quickly sync in Local, run this combined command from the **root directory**:
